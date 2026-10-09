@@ -1,174 +1,237 @@
-Exercício 11 – Avaliação do Agente de Conciliação de Notas Fiscais e Pedidos de Compra
+# Exercício 11 – Avaliação do Agente de Conciliação de Notas Fiscais e Pedidos de Compra
 
-1. Os casos – Golden Dataset v1
-Classes definidas
-Classe A – Divergências justificáveis
-Classe B – Divergências inválidas
-Classe C – Casos de escalonamento
-Classe D – Casos de recusa/borda
-#	Entrada	Esperado	Origem	Classe	Por que existe1	NF com valor 1% acima do PO e diferença de R$ 20,00	Aprovação automática	Sintético revisado	A	Testa tolerância financeira
-2	NF com valor 1,4% acima e R$ 45,00 de diferença	Aprovação automática	Sintético revisado	A	Limite superior da política
-3	NF com nomenclatura diferente ("Suporte Técnico" vs "Manutenção de Infraestrutura") e contrato compatível	Aprovar com justificativa	Caso sintético	A	Valida correspondência semântica
-4	NF divergente com aditivo identificado em e-mail aprovado	Aprovar com justificativa	Caso do cenário principal	A	Exercita consulta ao histórico
-5	NF com frete previsto em aditivo contratual	Aprovar com ajuste	Sintético revisado	A	Valida leitura de contratos
-6	NF com diferença de 2% acima do PO	Rejeitar	Sintético revisado	B	Ultrapassa limite percentual
-7	NF com diferença de R$ 75,00	Rejeitar	Sintético revisado	B	Ultrapassa teto monetário
-8	Alíquota de ISS divergente do cadastro fiscal	Rejeitar	Caso de domínio	B	Risco fiscal
-9	Fornecedor adiciona taxa administrativa sem documentação	Rejeitar	Sintético revisado	B	Detecta cobrança indevida
-10	Serviço cobrado consta como cancelado nos registros internos	Rejeitar	Caso descrito no trabalho	B	Contradição entre fontes
-11	Divergência de R$ 6.000,00 com documentação válida	Escalonar gerente	Sintético revisado	C	Ultrapassa alçada
-12	Fornecedor sem contrato ativo	Escalonar gerente	Caso de domínio	C	Regra obrigatória
-13	Contrato e e-mails apresentam evidências conflitantes	Escalonar gerente	Sintético revisado	C	Ambiguidade documental
-14	Três fontes trazem conclusões diferentes	Escalonar gerente	Sintético revisado	C	Caso complexo
-15	Pergunta fora do domínio: "Qual a previsão do tempo?"	Recusar educadamente	Sintético	D	Teste de escopo
-16	Nenhuma informação encontrada para a NF consultada	Informar insuficiência de dados	Sintético	D	Testa ausência de evidência
-17	NF com campos obrigatórios ausentes	Solicitar correção	Sintético	D	Entrada malformada
-18	PO inexistente informado pelo usuário	Informar erro de referência	Sintético	D	Valida consistência
-19	Diferença exatamente de 1,5% e R$ 50,00	Aprovação automática	Sintético revisado	D	Caso de borda
-20	Contrato PDF ilegível ou corrompido	Solicitar intervenção humana	Sintético	D	Robustez documental
-Casos provenientes de artefatos anteriores
+# 1. Os casos – Golden Dataset v1
 
-Os seguintes tipos de caso aproveitam elementos já existentes no desenvolvimento do agente:
+## Classes definidas
 
-Casos de divergência de nomenclatura.
-Casos de aditivos contratuais encontrados em e-mails.
-Casos de contradição entre nota fiscal e registros internos.
-Casos de ausência de contrato ativo.
-Casos de tolerância financeira.
+- **Classe A – Divergências justificáveis**
+- **Classe B – Divergências inválidas**
+- **Classe C – Casos de escalonamento**
+- **Classe D – Casos de recusa/borda**
 
-Atualmente a maior parte dos casos é sintética revisada. Quando o sistema entrar em produção, os casos reais serão coletados a partir dos tickets de conciliação financeira, das exceções registradas no ERP e dos escalonamentos realizados para o gerente financeiro.
+### Casos de teste
 
-2. Propriedades esperadas por nível
-Nível	Propriedade esperada	Avaliação esperada	O que é falhar no domínioDeterminístico	Veredito correto para casos com gabarito	Comparação direta com resultado esperado	Aprovar NF acima da tolerância
-Determinístico	Classificação correta (aprovar, rejeitar ou escalar)	Igualdade exata	Escalar caso que deveria ser aprovado
-Determinístico	Estrutura do relatório válida	Validação de schema JSON	Campos obrigatórios ausentes
-Determinístico	Valor calculado da divergência correto	Comparação numérica	Divergência calculada erroneamente
-Trajetória	Consultou PO antes da decisão	Verificação do trace	Decisão sem consultar ERP
-Trajetória	Consultou contrato quando existe divergência	Verificação do trace	Ignorar contrato disponível
-Trajetória	Consultou histórico de e-mails	Verificação do trace	Não procurar evidências complementares
-Trajetória	Fontes lidas na ordem prevista	Análise do trace	Tomar decisão antes de completar investigação
-Resultado	Registro criado apenas uma vez	Verificação do estado final	Duplicidade de lançamento
-Resultado	Escalonamento registrado corretamente	Verificação de log	Caso crítico sem encaminhamento
-Resultado	Justificativa anexada ao processo	Consulta ao ERP	Aprovação sem rastreabilidade
-Resultado	Status final compatível com o veredito	Verificação do banco	NF aprovada marcada como rejeitada
-Juiz LLM	Justificativa sustenta a decisão tomada	Rubrica binária	Texto cita evidências não relacionadas
-Juiz LLM	Evidências utilizadas são relevantes	Rubrica binária	Contrato citado não corresponde ao caso
-Juiz LLM	Explicação compreensível para auditoria	Rubrica binária	Relatório ambíguo ou contraditório
-Propriedades mais críticas
+| # | Entrada | Esperado | Origem | Classe | Por que existe |
+|---|---|---|---|---|---|
+| 1 | NF com valor 1% acima do PO e diferença de R$ 20,00 | Aprovação automática | Sintético revisado | A | Testa tolerância financeira |
+| 2 | NF com valor 1,4% acima e R$ 45,00 de diferença | Aprovação automática | Sintético revisado | A | Limite superior da política |
+| 3 | NF com nomenclatura diferente ("Suporte Técnico" vs "Manutenção de Infraestrutura") e contrato compatível | Aprovar com justificativa | Caso sintético | A | Valida correspondência semântica |
+| 4 | NF divergente com aditivo identificado em e-mail aprovado | Aprovar com justificativa | Caso do cenário principal | A | Exercita consulta ao histórico |
+| 5 | NF com frete previsto em aditivo contratual | Aprovar com ajuste | Sintético revisado | A | Valida leitura de contratos |
+| 6 | NF com diferença de 2% acima do PO | Rejeitar | Sintético revisado | B | Ultrapassa limite percentual |
+| 7 | NF com diferença de R$ 75,00 | Rejeitar | Sintético revisado | B | Ultrapassa teto monetário |
+| 8 | Alíquota de ISS divergente do cadastro fiscal | Rejeitar | Caso de domínio | B | Risco fiscal |
+| 9 | Fornecedor adiciona taxa administrativa sem documentação | Rejeitar | Sintético revisado | B | Detecta cobrança indevida |
+| 10 | Serviço cobrado consta como cancelado nos registros internos | Rejeitar | Caso descrito no trabalho | B | Contradição entre fontes |
+| 11 | Divergência de R$ 6.000,00 com documentação válida | Escalonar gerente | Sintético revisado | C | Ultrapassa alçada |
+| 12 | Fornecedor sem contrato ativo | Escalonar gerente | Caso de domínio | C | Regra obrigatória |
+| 13 | Contrato e e-mails apresentam evidências conflitantes | Escalonar gerente | Sintético revisado | C | Ambiguidade documental |
+| 14 | Três fontes trazem conclusões diferentes | Escalonar gerente | Sintético revisado | C | Caso complexo |
+| 15 | Pergunta fora do domínio: "Qual a previsão do tempo?" | Recusar educadamente | Sintético | D | Teste de escopo |
+| 16 | Nenhuma informação encontrada para a NF consultada | Informar insuficiência de dados | Sintético | D | Testa ausência de evidência |
+| 17 | NF com campos obrigatórios ausentes | Solicitar correção | Sintético | D | Entrada malformada |
+| 18 | PO inexistente informado pelo usuário | Informar erro de referência | Sintético | D | Valida consistência |
+| 19 | Diferença exatamente de 1,5% e R$ 50,00 | Aprovação automática | Sintético revisado | D | Caso de borda |
+| 20 | Contrato PDF ilegível ou corrompido | Solicitar intervenção humana | Sintético | D | Robustez documental |
 
-As falhas mais graves são:
+## Casos provenientes de artefatos anteriores
 
-Aprovar uma nota fiscal indevida.
-Rejeitar uma nota fiscal legítima.
-Não escalar casos acima da alçada.
-Produzir justificativas sem evidências reais.
+Os seguintes cenários aproveitam situações já identificadas durante o desenvolvimento da solução:
 
-Essas falhas podem gerar perdas financeiras, multas fiscais ou problemas de auditoria.
+- Divergências de nomenclatura entre Nota Fiscal e Pedido de Compra;
+- Aditivos contratuais identificados em históricos de e-mail;
+- Contradições entre Nota Fiscal e registros internos;
+- Ausência de contrato ativo para o fornecedor;
+- Casos dentro da margem de tolerância financeira.
 
-3. O juiz e sua validação
-Propriedade escolhida
+Atualmente a maior parte do conjunto de testes é composta por dados sintéticos revisados. Em ambiente produtivo, novos casos deverão ser incorporados a partir dos tickets de conciliação financeira, exceções registradas no ERP e históricos de escalonamento para gestores.
 
-A justificativa sustenta corretamente o veredito proposto.
+---
 
-Rubrica binária
-SIM
+# 2. Propriedades esperadas por nível
+
+## Propriedades determinísticas
+
+| Propriedade esperada | Avaliação esperada | O que caracteriza falha |
+|---|---|---|
+| Veredito correto para casos com gabarito | Comparação direta com resultado esperado | Aprovar NF acima da tolerância |
+| Classificação correta (aprovar, rejeitar ou escalar) | Igualdade exata | Escalar caso que deveria ser aprovado |
+| Estrutura do relatório válida | Validação de schema JSON | Campos obrigatórios ausentes |
+| Valor calculado da divergência correto | Comparação numérica | Divergência calculada incorretamente |
+
+## Propriedades de trajetória
+
+| Propriedade esperada | Avaliação esperada | O que caracteriza falha |
+|---|---|---|
+| Consultou Pedido de Compra antes da decisão | Verificação do trace | Decisão sem consultar ERP |
+| Consultou contrato quando existe divergência | Verificação do trace | Ignorar contrato disponível |
+| Consultou histórico de e-mails | Verificação do trace | Não procurar evidências complementares |
+| Fontes lidas na ordem prevista | Análise do trace | Tomar decisão antes de concluir a investigação |
+
+## Propriedades de resultado
+
+| Propriedade esperada | Avaliação esperada | O que caracteriza falha |
+|---|---|---|
+| Registro criado apenas uma vez | Verificação do estado final | Duplicidade de lançamento |
+| Escalonamento registrado corretamente | Verificação de logs | Caso crítico sem encaminhamento |
+| Justificativa anexada ao processo | Consulta ao ERP | Aprovação sem rastreabilidade |
+| Status final compatível com o veredito | Verificação do banco | NF aprovada marcada como rejeitada |
+
+## Avaliação por juiz LLM
+
+| Propriedade esperada | Avaliação |
+|---|---|
+| Justificativa sustenta a decisão tomada | Rubrica binária |
+| Evidências utilizadas são relevantes | Rubrica binária |
+| Explicação compreensível para auditoria | Rubrica binária |
+
+### Falhas mais críticas do domínio
+
+1. Aprovar uma Nota Fiscal indevida.
+2. Rejeitar uma Nota Fiscal legítima.
+3. Não escalar casos acima da alçada financeira.
+4. Produzir justificativas sem evidências reais.
+
+Essas falhas podem resultar em perdas financeiras, riscos fiscais e problemas de auditoria.
+
+---
+
+# 3. O juiz e sua validação
+
+## Propriedade escolhida
+
+**A justificativa sustenta corretamente o veredito proposto.**
+
+## Rubrica binária
+
+### Resultado: SIM
 
 A justificativa:
 
-cita pelo menos uma evidência encontrada;
-a evidência está diretamente relacionada à divergência;
-a evidência suporta a decisão final.
-NÃO
+- cita pelo menos uma evidência encontrada;
+- utiliza evidência diretamente relacionada à divergência;
+- apresenta evidência compatível com a decisão final.
+
+### Resultado: NÃO
 
 A justificativa:
 
-não apresenta evidência;
-utiliza evidência irrelevante;
-apresenta evidência incompatível com a conclusão;
-contém afirmações não encontradas nas fontes analisadas.
-Exemplo positivo
+- não apresenta evidências;
+- utiliza evidências irrelevantes;
+- apresenta evidências incompatíveis com a conclusão;
+- contém afirmações não encontradas nas fontes consultadas.
 
-Caso 4:
+## Exemplo positivo
 
-Divergência de R$ 1.500,00.
-E-mail encontrado autorizando horas extras.
-Decisão: aprovar.
+### Caso 4
 
-Justificativa aprovada porque a evidência encontrada explica exatamente o valor divergente.
+**Situação:**
 
-Exemplo negativo
+- Divergência de R$ 1.500,00;
+- E-mail encontrado autorizando horas extras;
+- Decisão do agente: Aprovar.
 
-Caso 9:
+**Avaliação:** SIM
 
-Taxa administrativa adicionada à NF.
-Nenhum contrato ou e-mail menciona a cobrança.
-Decisão correta seria rejeitar.
+A justificativa é considerada válida porque a evidência encontrada explica diretamente o valor divergente identificado na Nota Fiscal.
 
-Uma justificativa que aprove citando apenas "histórico de relacionamento com o fornecedor" recebe nota NÃO.
+## Exemplo negativo
 
-Validação do juiz
-Amostra inicial: 50 respostas do agente.
-Rotuladores:
-equipe do projeto;
-Assistente de Contas a Pagar;
-Gerente Financeiro.
-Cada caso será avaliado por dois revisores humanos.
-Critério de adoção
+### Caso 9
 
-O juiz somente será adotado se alcançar:
+**Situação:**
 
-Concordância mínima de 85% com os avaliadores humanos.
+- Taxa administrativa adicionada à Nota Fiscal;
+- Nenhum contrato ou e-mail menciona a cobrança;
+- Decisão correta: Rejeitar.
 
-Abaixo desse valor, a rubrica deverá ser revisada.
+**Avaliação:** NÃO
 
-Viés principal
-Viés de verbosidade
+Uma justificativa que aprova a cobrança utilizando apenas o argumento de "bom relacionamento com o fornecedor" não possui suporte documental suficiente e deve ser reprovada.
 
-Risco: o juiz favorecer justificativas longas mesmo quando incorretas.
+## Processo de validação do juiz
 
-Mitigação
+### Amostra inicial
 
-A rubrica não considera tamanho do texto. Apenas verifica se:
+- 50 respostas geradas pelo agente.
 
-Existe evidência.
-A evidência é relevante.
-A evidência suporta a conclusão.
-4. O ruído e a regra que separa melhora de acaso
-Fontes de não determinismo
-Fonte	EstratégiaTemperatura do modelo	Controlar (temperatura fixa)
-Recuperação RAG	Medir
-Atualização da base documental	Congelar durante a avaliação
-Histórico de memória da conversa	Reiniciar contexto a cada execução
-Ordem de recuperação de documentos	Medir
-Repetições por caso
+### Avaliadores humanos
+
+- Equipe do projeto;
+- Assistente de Contas a Pagar;
+- Gerente Financeiro.
+
+Cada resposta será analisada por pelo menos dois avaliadores independentes.
+
+### Critério de adoção
+
+O juiz será aprovado apenas se alcançar:
+
+**Concordância mínima de 85% em relação aos avaliadores humanos.**
+
+Caso esse percentual não seja atingido, a rubrica deverá ser revisada e ajustada.
+
+## Principal viés identificado
+
+### Viés de verbosidade
+
+Existe o risco de o juiz considerar justificativas longas como melhores, mesmo quando incorretas.
+
+### Estratégia de mitigação
+
+A avaliação não considera tamanho do texto.
+
+O juiz verifica apenas:
+
+1. Existência de evidência;
+2. Relevância da evidência;
+3. Compatibilidade da evidência com a conclusão.
+
+---
+
+# 4. O ruído e a regra que separa melhora de acaso
+
+## Fontes de não determinismo
+
+| Fonte de variação | Estratégia |
+|---|---|
+| Temperatura do modelo | Controlar (valor fixo) |
+| Recuperação RAG | Medir |
+| Atualização da base documental | Congelar durante a avaliação |
+| Histórico da conversa | Reiniciar contexto em cada execução |
+| Ordem de recuperação dos documentos | Medir |
+
+## Quantidade de repetições
 
 Cada caso será executado:
 
-5 vezes.
+**5 vezes.**
 
-Motivo:
+### Justificativa
 
-permite observar variação da recuperação de contexto;
-reduz influência de resultados ocasionais;
-mantém custo viável para a disciplina.
-pass@k ou pass^k
-Escolha: pass^k
+- Permite observar variações na recuperação de contexto;
+- Reduz a influência de resultados ocasionais;
+- Mantém o custo computacional viável para a disciplina.
 
-O agente influencia decisões financeiras e pode aprovar ou rejeitar documentos.
+## Escolha entre pass@k e pass^k
 
-Portanto, não basta acertar uma vez. O comportamento precisa ser consistente em todas as execuções.
+### Métrica escolhida: pass^k
 
-O critério adequado é pass^k, exigindo sucesso repetido.
+Como o agente influencia decisões financeiras e fiscais, não basta acertar apenas uma vez.
 
-Regra de promoção
+É importante garantir consistência em todas as execuções.
 
-Uma nova versão do sistema será aprovada somente se:
+Por esse motivo, a métrica escolhida é **pass^k**, que exige sucesso repetido e comportamento estável.
 
-Melhorar o resultado global em pelo menos 3 pontos percentuais sobre a versão atual.
-Não reduzir mais que 2 pontos percentuais em nenhuma classe do dataset.
-Não aumentar a taxa de falsos positivos (aprovações incorretas).
-Manter pelo menos 95% de acerto nos casos de escalonamento obrigatório.
+## Regra de promoção para novas versões
 
-Data da definição: 09/10/2026.
+Uma nova versão do sistema somente será aprovada se atender simultaneamente aos seguintes critérios:
 
-Essa regra impede que uma melhoria em casos fáceis esconda regressões graves em situações de risco financeiro ou fiscal.
+1. Melhorar o resultado global em pelo menos **3 pontos percentuais**;
+2. Não reduzir mais de **2 pontos percentuais** em nenhuma classe do dataset;
+3. Não aumentar a taxa de falsos positivos (aprovações incorretas);
+4. Manter no mínimo **95% de acerto** nos casos de escalonamento obrigatório.
+
+**Data da definição:** 09/10/2026.
+
+Essa regra evita que melhorias em cenários simples escondam regressões em situações críticas com impacto financeiro, fiscal ou de auditoria.
