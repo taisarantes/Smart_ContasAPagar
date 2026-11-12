@@ -1,0 +1,3 @@
+def buscar_documentos(query):
+
+    ...
