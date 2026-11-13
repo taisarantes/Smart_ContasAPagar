@@ -85,7 +85,18 @@ ERP_DADOS = {
         "valor_nf": 60000.00,
         "valor_pedido": 50000.00,
         "status_erp": "Bloqueada - Divergência de Quantidade (+20 un.)"
-    }
+    },
+    # Caso 3: Divergência de Valor sem justificativa (NF > Pedido)
+        "64756": {
+            "pedido": "450019951",
+            "fornecedor": "G&S Materiais",
+            "item": "Cimento",
+            "qtd_nf": 1,
+            "qtd_pedido": 1,
+            "valor_nf": 2650.00,
+            "valor_pedido": 2500.00,
+            "status_erp": "Bloqueada - Divergência de Valor (+6%)"
+        }
 }
 
 # CORPUS_DIR = Path("corpus")

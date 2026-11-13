@@ -1,3 +1,7 @@
+Assunto: Reajuste nos lançamentos Fornecedor XYZ
+De: comprador@empresa.com.br
+Para: financeiro@empresa.com.br
+
 Fornecedor XYZ solicitou reajuste
 temporário devido a aumento
 de custos operacionais.
